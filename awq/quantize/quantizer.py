@@ -115,11 +115,13 @@ def pseudo_quantize_model_weight(
     for i in tqdm(range(len(layers)), desc="pseudo weight quantization..."):
         named_linears = get_named_linears(layers[i])
         for n, m in named_linears.items():
-            m.cuda()
+            if torch.cuda.is_available():
+                m.cuda()
             m.weight.data = pseudo_quantize_tensor(
                 m.weight.data, n_bit=w_bit, **q_config
             )
-            m.cpu()
+            if torch.cuda.is_available():
+                m.cpu()
 
 
 @torch.no_grad()

@@ -1,4 +1,3 @@
-from lm_eval import evaluator, tasks
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 import torch
 import argparse
@@ -251,6 +250,7 @@ def main():
     model, enc = build_model_and_enc(args.model_path)
 
     if args.tasks is not None:
+        from lm_eval import evaluator, tasks
         # https://github.com/IST-DASLab/gptq/blob/2d65066eeb06a5c9ff5184d8cebdf33662c67faf/llama.py#L206
         if args.tasks == "wikitext":
             testenc = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")

@@ -59,7 +59,8 @@ def auto_clip_layer(
     del input_feat
     del org_out
     gc.collect()
-    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     return best_max_val.squeeze(1)
 
 
@@ -74,12 +75,14 @@ def auto_clip_block(module, w_bit, q_config, input_feat):
         # due to qk bmm, it is hard to clip precisely
         if any([_ in name for _ in ["q_", "k_", "query", "key", "Wqkv"]]):
             continue
-        named_linears[name].cuda()
+        if torch.cuda.is_available():
+            named_linears[name].cuda()
         max_val = auto_clip_layer(
             named_linears[name].weight, input_feat[name], n_bit=w_bit, q_config=q_config
         )
         clip_list.append((name, max_val))
-        named_linears[name].cpu()
+        if torch.cuda.is_available():
+            named_linears[name].cpu()
     return clip_list
 
 
@@ -89,7 +92,8 @@ def apply_clip(module, clip_list):
 
     for name, max_val in clip_list:
         layer = get_op_by_name(module, name)
-        layer.cuda()
+        if torch.cuda.is_available():
+            layer.cuda()
         max_val = max_val.to(layer.weight.device)
         org_shape = layer.weight.shape
         layer.weight.data = layer.weight.data.reshape(*max_val.shape[:2], -1)

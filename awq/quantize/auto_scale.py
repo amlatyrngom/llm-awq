@@ -450,10 +450,11 @@ def apply_scale(module, scales_list, input_feat_dict=None):
         prev_op = get_op_by_name(module, prev_op_name)
         layers = [get_op_by_name(module, name) for name in layer_names]
 
-        prev_op.cuda()
-        for layer in layers:
-            layer.cuda()
-        scales.cuda()
+        if torch.cuda.is_available():
+            prev_op.cuda()
+            for layer in layers:
+                layer.cuda()
+            scales.cuda()
 
         if isinstance(prev_op, nn.Linear):
             assert len(layers) == 1
@@ -473,7 +474,8 @@ def apply_scale(module, scales_list, input_feat_dict=None):
                 inp = input_feat_dict[layer_name]
                 inp.div_(scales.view(1, -1).to(inp.device))
 
-        prev_op.cpu()
-        for layer in layers:
-            layer.cpu()
-        scales.cpu()
+        if torch.cuda.is_available():
+            prev_op.cpu()
+            for layer in layers:
+                layer.cpu()
+            scales.cpu()

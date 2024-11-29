@@ -1,7 +1,6 @@
 import math
 import torch
 import torch.nn as nn
-import awq_inference_engine  # with CUDA kernels
 
 
 def make_divisible(c, divisor):
@@ -197,6 +196,7 @@ class WQLinear(nn.Module):
 
     @torch.no_grad()
     def forward(self, x):
+        import awq_inference_engine  # with CUDA kernels
         # out_shape = x.shape[:-1] + (self.out_features,)
         # inputs = x.reshape(-1, x.shape[-1])
         inputs = x
